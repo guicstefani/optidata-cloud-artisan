@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Layout from '@/components/layout/Layout';
 import PremiumSlider from '@/components/calculator/PremiumSlider';
 import LicensingTab from '@/components/calculator/LicensingTab';
 import PricingBreakdown from '@/components/calculator/PricingBreakdown';
+import VMSelector from '@/components/calculator/VMSelector';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VMConfig } from '@/types/calculator';
+import { useCalculatorStore } from '@/store/calculator';
 import { 
   Server, 
   HardDrive, 
@@ -16,60 +17,38 @@ import {
 } from 'lucide-react';
 
 const Calculator = () => {
-  const [config, setConfig] = useState<VMConfig>({
-    id: 'vm-' + Date.now(),
-    nome: 'VM Principal',
-    vcpu: 4,
-    ram: 8,
-    discoSSD: 100,
-    discoFCM: 0,
-    backupTipo: 'padrao',
-    sistemaOperacional: {
-      windows: false,
-      rhel: false,
-      suse: false,
-      linux_gratuito: 'Ubuntu 22.04'
-    },
-    bancodados: {
-      sql_server_std: false,
-      sql_server_web: false,
-      mysql_enterprise: false,
-      mongodb_enterprise: false,
-      postgresql: true
-    },
-    aplicacoes: {
-      antivirus: false,
-      thinprint: false,
-      sap_hana: false
-    },
-    tsplus: {
-      ativo: false,
-      usuarios: 3,
-      advanced_security: false,
-      two_factor: false
-    },
-    waf: {
-      tipo: 'none'
-    },
-    ips_adicionais: 0,
-    desconto_individual: 0,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  });
+  const { getSelectedVM, updateVM } = useCalculatorStore();
+  const config = getSelectedVM();
 
-  const updateConfig = (newConfig: VMConfig) => {
-    setConfig({
-      ...newConfig,
-      updated_at: new Date().toISOString()
-    });
+  const updateConfig = (newConfig: any) => {
+    if (config) {
+      updateVM(config.id, newConfig);
+    }
   };
+
+  if (!config) {
+    return (
+      <Layout title="Calculadora Cloud Premium">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-gray-400">Carregando configuração...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout 
       title="Calculadora Cloud Premium" 
       subtitle="Configure sua infraestrutura ideal com precisão cirúrgica"
     >
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+        {/* VM Selector Sidebar */}
+        <div className="xl:col-span-1">
+          <VMSelector />
+        </div>
+
         {/* Configuration Panel */}
         <div className="xl:col-span-3">
           <Tabs defaultValue="recursos" className="w-full">
@@ -100,7 +79,7 @@ const Calculator = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gold-400">Recursos Computacionais</h3>
-                    <p className="text-sm text-gray-400">Configure CPU e memória</p>
+                    <p className="text-sm text-gray-400">Configure CPU e memória para {config.nome}</p>
                   </div>
                 </div>
                 
@@ -135,7 +114,7 @@ const Calculator = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gold-400">Armazenamento</h3>
-                    <p className="text-sm text-gray-400">Discos SSD e FCM</p>
+                    <p className="text-sm text-gray-400">Discos SSD e FCM para {config.nome}</p>
                   </div>
                 </div>
                 
@@ -199,7 +178,7 @@ const Calculator = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gold-400">Configurações Extras</h3>
-                    <p className="text-sm text-gray-400">IPs adicionais e descontos</p>
+                    <p className="text-sm text-gray-400">IPs adicionais e descontos para {config.nome}</p>
                   </div>
                 </div>
                 
